@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const createAccount = async (email: string, password: string) => {
         try {
-            if (password.length < 7) {
+            if (password.length < 6) {
                 return setErrorMessage('A senha não pode conter menos de 6 dígitos');
             }
             setIsLoading(true);
