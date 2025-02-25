@@ -45,15 +45,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const signInWithCredentials = async (email: string, password: string) => {
         try {
+            setIsLoading(true);
             const signInMethods = await fetchSignInMethodsForEmail(auth, email);
         
             if (signInMethods.length === 0) {
+                setIsLoading(false);
                 setErrorMessage("Usuário não encontrado.");
                 return;
             }
 
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
+            setIsLoading(false);
+
             console.error("Erro ao autenticar com credenciais:", error);
         }
     };
