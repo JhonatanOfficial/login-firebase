@@ -1,101 +1,102 @@
+"use client"
+
+import { Input } from "@/components/input";
+import { useAuth } from "@/context/authContext";
+import { FormValidateService } from "@/services/form_validate_service";
+import { Loader } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [isSignUp, setIsSignUp] = useState<boolean>(false);
+  const [passwordsMatch, setpasswordsMatch] = useState<Boolean>(true);
+  const { signInWithGoogle, errorMessage, successMessage, createAccount, user, isLoading } = useAuth();
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  useEffect(() => {
+    if (user) {
+      router.push("/success");
+    }
+  }, [user, router]);
+
+  const handleLogin = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const inputs = event.currentTarget;
+    const email = inputs.elements.namedItem('email') as HTMLInputElement;
+    const password = inputs.elements.namedItem('password') as HTMLInputElement;
+    const inputConfirmPassword = inputs.elements.namedItem('confirmPassword') as HTMLInputElement;
+
+    if (inputConfirmPassword?.value) {
+      const passwordsIsTheSame = FormValidateService.confirmPassword(password?.value, inputConfirmPassword?.value);
+      
+      if (passwordsIsTheSame) return createAccount(email.value, password.value);
+
+      return setpasswordsMatch(passwordsIsTheSame);
+    }
+
+  }
+
+  return (
+    <main className="min-h-screen flex items-center">
+      <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg">
+        <h2 className="text-xl font-semibold mb-4">{isSignUp ? 'Cadastre-se' : 'Entrar'}</h2>
+        <form onSubmit={handleLogin} className="space-y-4 max-w-[20rem]">
+
+          {/* SÓ VAI APARECER O INPUT NOME CASO ESTEJA NA PÁGINA DE CADASTRO */}
+          {isSignUp && (
+            <div>
+              <Input name="name" type="text" placeholder="Nome" />
+            </div>
+          )}
+          <div>
+            <Input name="email" type="email" placeholder="Email" />
+          </div>
+          <div>
+            <Input name="password" type="password" placeholder="Senha" />
+          </div>
+
+          {isSignUp && (
+            <>
+              <div>
+                <Input name="confirmPassword" type="password" placeholder="Senha" />
+              </div>
+              <div className="flex flex-col gap-2">
+                {!passwordsMatch && <span className="text-red-500 text-sm">As senhas não são iguais</span>}
+                {errorMessage && <span className="text-red-500 text-sm w-max">{errorMessage}</span>}
+                {successMessage && <span className="text-green-500 text-sm">{successMessage}</span>}
+              </div>
+            </>
+          )}
+          <button
+            className="text-md font-semibold mb-4 text-center bg-black w-full p-3 rounded-md text-white flex items-center justify-center"
+            disabled={isLoading}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {isLoading ? (
+              <Loader width={24} height={24} className="animate-spin" />
+            ) : (
+              isSignUp ? 'Cadastre-se' : 'Entrar'
+            )}
+          </button>
+          <button
+            onClick={signInWithGoogle}
+            className="text-md font-semibold mb-4 text-center w-full p-3 rounded-md flex items-center justify-center gap-10 border-2 border-gray-300">
+            <Image src={"/google.svg"} alt="Google Icon" width={20} height={20} />
+            Entrar com Google
+          </button>
+        </form>
+
+        {/* MUDAR ENTRE LOGIN E CADASTRO */}
+        <p className="text-sm text-center mt-4">
+          {isSignUp ? 'Já tem uma conta?' : 'Ainda não tem uma conta?'}
+          <button
+            onClick={() => { setIsSignUp(!isSignUp); setpasswordsMatch(true) }}
+            className="text-blue-500 hover:underline ml-1"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            {isSignUp ? 'Entrar' : 'Cadastre-se'}
+          </button>
+        </p>
+      </div>
+    </main>
   );
 }
