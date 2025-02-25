@@ -10,7 +10,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 export default function Home() {
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
-  const [passwordsMatch, setpasswordsMatch] = useState<Boolean>(true);
+  const [passwordsMatch, setpasswordsMatch] = useState<boolean>(true);
   const { signInWithGoogle, errorMessage, successMessage, createAccount, user, isLoading } = useAuth();
   const router = useRouter();
 

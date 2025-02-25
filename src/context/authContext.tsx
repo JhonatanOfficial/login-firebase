@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { signInWithPopup, GoogleAuthProvider, User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase.config";
+import { FirebaseError } from "firebase/app";
 
 interface ContextProps {
     signInWithGoogle: () => Promise<void>;
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const createAccount = async (email: string, password: string) => {
         try {
-            if(password.length < 7) {
+            if (password.length < 7) {
                 return setErrorMessage('A senha não pode conter menos de 6 dígitos');
             }
             setIsLoading(true);
@@ -58,29 +59,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setSuccessMessage('Conta criada com sucesso!');
             setErrorMessage('');
             setIsLoading(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             setIsLoading(false);
             console.error("Erro ao criar conta:", error);
-    
-            if (error.code === 'auth/email-already-in-use') {
-                setErrorMessage('Este e-mail já está em uso. Tente outro.');
-            } else {
-                setErrorMessage('Erro ao criar conta. Tente novamente.');
+        
+            if (error instanceof FirebaseError) {
+                if (error.code === 'auth/email-already-in-use') {
+                    setErrorMessage('Este e-mail já está em uso. Tente outro.');
+                } else {
+                    setErrorMessage('Erro ao criar conta. Tente novamente.');
+                }
+            } else if (error instanceof Error) {
+                setErrorMessage('Erro desconhecido. Tente novamente.');
             }
-            
             setSuccessMessage('');
         }
     };
 
     const signOutUser = async () => {
         try {
-          await signOut(auth);
-          console.log("Usuário deslogado com sucesso");
+            await signOut(auth);
+            console.log("Usuário deslogado com sucesso");
         } catch (error) {
-          console.error("Erro ao deslogar:", error);
+            console.error("Erro ao deslogar:", error);
         }
-      };
-      
+    };
+
 
     return (
         <Context.Provider value={{
