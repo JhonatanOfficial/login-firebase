@@ -11,7 +11,7 @@ import { FormEvent, useEffect, useState } from "react";
 export default function Home() {
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
   const [passwordsMatch, setpasswordsMatch] = useState<boolean>(true);
-  const { signInWithGoogle, errorMessage, successMessage, createAccount, user, isLoading } = useAuth();
+  const { signInWithGoogle, errorMessage, successMessage, createAccount, user, isLoading, signInWithCredentials, setErrorMessage, setSuccessMessage } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -34,6 +34,8 @@ export default function Home() {
 
       return setpasswordsMatch(passwordsIsTheSame);
     }
+
+    signInWithCredentials(email.value, password.value)
 
   }
 
@@ -61,13 +63,13 @@ export default function Home() {
               <div>
                 <Input name="confirmPassword" type="password" placeholder="Senha" />
               </div>
-              <div className="flex flex-col gap-2">
                 {!passwordsMatch && <span className="text-red-500 text-sm">As senhas não são iguais</span>}
+            </>
+          )}
+           <div className="flex flex-col gap-2">
                 {errorMessage && <span className="text-red-500 text-sm w-max">{errorMessage}</span>}
                 {successMessage && <span className="text-green-500 text-sm">{successMessage}</span>}
               </div>
-            </>
-          )}
           <button
             className="text-md font-semibold mb-4 text-center bg-black w-full p-3 rounded-md text-white flex items-center justify-center"
             disabled={isLoading}
@@ -90,7 +92,7 @@ export default function Home() {
         <p className="text-sm text-center mt-4">
           {isSignUp ? 'Já tem uma conta?' : 'Ainda não tem uma conta?'}
           <button
-            onClick={() => { setIsSignUp(!isSignUp); setpasswordsMatch(true) }}
+            onClick={() => { setIsSignUp(!isSignUp); setpasswordsMatch(true); setSuccessMessage(''); setErrorMessage('') }}
             className="text-blue-500 hover:underline ml-1"
           >
             {isSignUp ? 'Entrar' : 'Cadastre-se'}

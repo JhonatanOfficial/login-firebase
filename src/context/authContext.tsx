@@ -14,6 +14,8 @@ interface ContextProps {
     user: User | null;
     successMessage: string;
     errorMessage: string;
+    setErrorMessage: React.Dispatch<React.SetStateAction<string>>
+    setSuccessMessage: React.Dispatch<React.SetStateAction<string>>
 }
 
 const Context = createContext<ContextProps | null>(null);
@@ -46,10 +48,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const signInMethods = await fetchSignInMethodsForEmail(auth, email);
         
             if (signInMethods.length === 0) {
-                console.error("Usuário não encontrado.");
+                setErrorMessage("Usuário não encontrado.");
                 return;
             }
-            
+
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
             console.error("Erro ao autenticar com credenciais:", error);
@@ -102,7 +104,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             user,
             successMessage,
             errorMessage,
-            signOutUser
+            signOutUser,
+            setErrorMessage,
+            setSuccessMessage
         }}>
             {children}
         </Context.Provider>
