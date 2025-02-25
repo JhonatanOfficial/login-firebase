@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { signInWithPopup, GoogleAuthProvider, User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, fetchSignInMethodsForEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase.config";
 import { FirebaseError } from "firebase/app";
 
@@ -43,6 +43,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const signInWithCredentials = async (email: string, password: string) => {
         try {
+            const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+        
+            if (signInMethods.length === 0) {
+                console.error("Usuário não encontrado.");
+                return;
+            }
+            
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
             console.error("Erro ao autenticar com credenciais:", error);
